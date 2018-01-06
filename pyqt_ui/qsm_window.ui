@@ -1,0 +1,975 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1036</width>
+    <height>630</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Susceptibility Imaging Toolkit (SITK)</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="stackedWidget_data">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>281</width>
+      <height>551</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="page_main">
+     <widget class="QToolBox" name="toolBox_main">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>261</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="page_data">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>261</width>
+         <height>387</height>
+        </rect>
+       </property>
+       <attribute name="label">
+        <string>Data</string>
+       </attribute>
+       <widget class="QTreeWidget" name="treeWidget_data">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>261</width>
+          <height>351</height>
+         </rect>
+        </property>
+        <attribute name="headerDefaultSectionSize">
+         <number>120</number>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>Data</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Size</string>
+         </property>
+        </column>
+        <item>
+         <property name="text">
+          <string>Magnitude</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Phase</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Parameters</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Mask</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unwrapped</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Tissue Phase</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Susceptibility</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QRadioButton" name="radioButton_data_left">
+        <property name="geometry">
+         <rect>
+          <x>70</x>
+          <y>360</y>
+          <width>41</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Left</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="radioButton_data_right">
+        <property name="geometry">
+         <rect>
+          <x>140</x>
+          <y>360</y>
+          <width>51</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Right</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_parameters">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>261</width>
+         <height>387</height>
+        </rect>
+       </property>
+       <attribute name="label">
+        <string>Parameters</string>
+       </attribute>
+       <widget class="QTreeWidget" name="treeWidget_parameters">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>261</width>
+          <height>351</height>
+         </rect>
+        </property>
+        <attribute name="headerDefaultSectionSize">
+         <number>150</number>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>Parameter</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Value</string>
+         </property>
+        </column>
+        <item>
+         <property name="text">
+          <string>Acquisition</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>echoes (TE)</string>
+          </property>
+          <property name="text">
+           <string>1</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>voxel size</string>
+          </property>
+          <property name="text">
+           <string>[1,1,1]</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>strength (B0)</string>
+          </property>
+          <property name="text">
+           <string>3</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>direction (B0_dir)</string>
+          </property>
+          <property name="text">
+           <string>[0,0,1]</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+        </item>
+        <item>
+         <property name="text">
+          <string>V-SHARP</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>radius</string>
+          </property>
+          <property name="text">
+           <string>12</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+        </item>
+        <item>
+         <property name="text">
+          <string>QSM-STAR</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>tau</string>
+          </property>
+          <property name="text">
+           <string>1e-6</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+        </item>
+        <item>
+         <property name="text">
+          <string>QSM-iCS</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>alpha</string>
+          </property>
+          <property name="text">
+           <string>5e-5</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>beta</string>
+          </property>
+          <property name="text">
+           <string>3e-4</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>max iterations</string>
+          </property>
+          <property name="text">
+           <string>10</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>tolerance</string>
+          </property>
+          <property name="text">
+           <string>1</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+        </item>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_create_mask">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>460</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Create Mask</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_unwrap_phase">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>460</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unwrap Phase</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_v_sharp">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>460</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>V-SHARP</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_qsm_star">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>500</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>QSM-STAR</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_qsm_ics">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>500</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>QSM-iCS</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_contrast">
+     <widget class="QFrame" name="frame_contrast">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>261</width>
+        <height>201</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>220</y>
+        <width>41</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Center</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>250</y>
+        <width>41</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Range</string>
+      </property>
+     </widget>
+     <widget class="QSlider" name="horizontalSlider_center">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>220</y>
+        <width>160</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>49</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QSlider" name="horizontalSlider_range">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>250</y>
+        <width>160</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>49</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_contrast_auto">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>300</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Auto</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_contrast_ok">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>300</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>OK</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_contrast_cancel">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>300</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cancel</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_contrast_left">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>270</y>
+        <width>41</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Left</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_contrast_right">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>270</y>
+        <width>51</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Right</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_center">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>220</y>
+        <width>62</width>
+        <height>21</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_range">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>250</y>
+        <width>62</width>
+        <height>21</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QStackedWidget" name="stackedWidget_image">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>0</y>
+      <width>751</width>
+      <height>551</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="page_all">
+     <widget class="QFrame" name="frame_all">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>741</width>
+        <height>481</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_all_x">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>500</y>
+        <width>61</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>x: </string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_all_y">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>500</y>
+        <width>61</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>y: </string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_all_z">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>500</y>
+        <width>61</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>z: </string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_all_v">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>500</y>
+        <width>61</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>v: </string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_single">
+     <widget class="QFrame" name="frame_single">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>741</width>
+        <height>481</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QScrollBar" name="horizontalScrollBar_single_slice_left">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>500</y>
+        <width>241</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_single_v">
+      <property name="geometry">
+       <rect>
+        <x>680</x>
+        <y>500</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>v: </string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_single_slice_left">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>500</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>Slice: </string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_single_slice_right">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>500</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="prefix">
+       <string>Slice: </string>
+      </property>
+     </widget>
+     <widget class="QScrollBar" name="horizontalScrollBar_single_slice_right">
+      <property name="geometry">
+       <rect>
+        <x>430</x>
+        <y>500</y>
+        <width>241</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QScrollBar" name="horizontalScrollBar_single_slice_both">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>530</y>
+        <width>271</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1036</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionView"/>
+    <addaction name="actionSave_All"/>
+    <addaction name="actionRead_Dicom"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionContrast"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+   </widget>
+   <widget class="QMenu" name="menuOrientation">
+    <property name="title">
+     <string>Orientation</string>
+    </property>
+    <addaction name="actionAxial"/>
+    <addaction name="actionSaggital"/>
+    <addaction name="actionCoronal"/>
+    <addaction name="actionAll_Orientations"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuOrientation"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionView"/>
+   <addaction name="actionSave_All"/>
+   <addaction name="separator"/>
+   <addaction name="actionContrast"/>
+   <addaction name="actionZoom_In"/>
+   <addaction name="actionZoom_Out"/>
+   <addaction name="separator"/>
+   <addaction name="actionAxial"/>
+   <addaction name="actionSaggital"/>
+   <addaction name="actionCoronal"/>
+   <addaction name="actionAll_Orientations"/>
+  </widget>
+  <action name="actionRead_Dicom">
+   <property name="text">
+    <string>Read Dicom</string>
+   </property>
+   <property name="toolTip">
+    <string>Read Dicom</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+   <property name="toolTip">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/01_open.png</normaloff>:/images/01_open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/02_save.png</normaloff>:/images/02_save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_All">
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/03_save_all.png</normaloff>:/images/03_save_all.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save All</string>
+   </property>
+   <property name="toolTip">
+    <string>Save All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionAxial">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/04_axial.png</normaloff>:/images/04_axial.png</iconset>
+   </property>
+   <property name="text">
+    <string>Axial</string>
+   </property>
+   <property name="toolTip">
+    <string>Axial</string>
+   </property>
+  </action>
+  <action name="actionSaggital">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/05_saggital.png</normaloff>:/images/05_saggital.png</iconset>
+   </property>
+   <property name="text">
+    <string>Saggital</string>
+   </property>
+   <property name="toolTip">
+    <string>Saggital</string>
+   </property>
+  </action>
+  <action name="actionCoronal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/06_coronal.png</normaloff>:/images/06_coronal.png</iconset>
+   </property>
+   <property name="text">
+    <string>Coronal</string>
+   </property>
+   <property name="toolTip">
+    <string>Coronal</string>
+   </property>
+  </action>
+  <action name="actionAll_Orientations">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/07_all_orientations.png</normaloff>:/images/07_all_orientations.png</iconset>
+   </property>
+   <property name="text">
+    <string>All Orientations</string>
+   </property>
+   <property name="toolTip">
+    <string>All Orientations</string>
+   </property>
+  </action>
+  <action name="actionContrast">
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/08_contrast.png</normaloff>:/images/08_contrast.png</iconset>
+   </property>
+   <property name="text">
+    <string>Contrast</string>
+   </property>
+   <property name="toolTip">
+    <string>Contrast</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/09_zoom_in.png</normaloff>:/images/09_zoom_in.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom In</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/10_zoom_out.png</normaloff>:/images/10_zoom_out.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom Out</string>
+   </property>
+  </action>
+  <action name="actionView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="qsm_images.qrc">
+     <normaloff>:/images/11_view.png</normaloff>:/images/11_view.png</iconset>
+   </property>
+   <property name="text">
+    <string>View</string>
+   </property>
+   <property name="toolTip">
+    <string>View</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="qsm_images.qrc"/>
+ </resources>
+ <connections/>
+</ui>
