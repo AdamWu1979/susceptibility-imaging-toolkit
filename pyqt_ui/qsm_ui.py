@@ -1,4 +1,6 @@
 import sys
+import time
+from math import ceil
 
 from PyQt5 import QtCore, QtWidgets
 
@@ -6,6 +8,7 @@ import numpy as np
 import scipy.io as scio
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.widgets import RectangleSelector
 
 from qsm_window import Ui_MainWindow
 
@@ -21,7 +24,6 @@ from functions.parser import parse_int, parse_float, parse_array
 UI for the Susceptibility Imaging Toolkit (SITK)
 University of California, Berkeley
 
-TODO: contrast, zoom
 """
 
 #sys.stderr = sys.stdout
@@ -50,7 +52,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionSaggital.triggered.connect(self.on_actionSaggital)#checkable
         self.actionCoronal.triggered.connect(self.on_actionCoronal)#checkable
         self.actionAll_Orientations.triggered.connect(self.on_actionAll_Orientations)#checkable
-        self.actionContrast.triggered.connect(self.on_actionContrast)
         self.actionZoom_In.triggered.connect(self.on_actionZoom_In)#checkable
         self.actionZoom_Out.triggered.connect(self.on_actionZoom_Out)#checkable
         
@@ -62,18 +63,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButton_qsm_ics.clicked.connect(self.on_qsm_ics)
         self.treeWidget_data.clicked.connect(self.on_data_clicked)
         self.treeWidget_parameters.itemChanged.connect(self.on_parameters_changed)
-
-        #Connect contrast actions
-        #actionContrast should save old values incase of cancel
-        self.pushButton_contrast_auto.clicked.connect(self.on_contrast_auto)
-        self.pushButton_contrast_ok.clicked.connect(self.on_contrast_ok)
-        self.pushButton_contrast_cancel.clicked.connect(self.on_contrast_cancel)
-        ##the following should set center or range
-        ##and then call an update vals+redraw hist function
-        self.horizontalSlider_center.valueChanged.connect(lambda: self.on_center_changed(self.horizontalSlider_center.value()))
-        self.horizontalSlider_range.valueChanged.connect(lambda: self.on_range_changed(self.horizontalSlider_range.value()))
-        self.doubleSpinBox_center.valueChanged.connect(lambda: self.on_center_changed(self.doubleSpinBox_center.value()))
-        self.doubleSpinBox_range.valueChanged.connect(lambda: self.on_range_changed(self.doubleSpinBox_range.value()))
 
         #Connect all-orientation-view actions
         self.spinBox_all_x.valueChanged.connect(self.on_spinBox_all_x_changed)
@@ -111,9 +100,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         ### Parameters
         self.parameters = {}
-        self.updating_widget = False
         self.on_parameters_changed()
 
+        ### Zoom
+        #connect key press and release in canvases to rectangle draw, then save coordinates (like a crop)
+        self.zoom_coords = {'axial':((None, None), (None, None)),
+                            'coronal':((None, None), (None, None)),
+                            'saggital':((None, None), (None, None)),
+                            'left':((None, None), (None, None)),
+                            'right':((None, None), (None, None))}
+    
         ### Image display
         frame_dimensions = (741, 481)
         dpi = 1
@@ -177,6 +173,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                        origin = 'lower')
         self.frame_single_canvas.draw()
 
+        #Zoom selectors
+        self.axial_selector = RectangleSelector(self.frame_all_axial,
+                                                lambda a,b: self.on_select(a,b,'axial'))
+        self.coronal_selector = RectangleSelector(self.frame_all_coronal,
+                                                 lambda a,b: self.on_select(a,b,'coronal'))
+        self.saggital_selector = RectangleSelector(self.frame_all_saggital,
+                                                   lambda a,b: self.on_select(a,b,'saggital'))
+        self.left_selector = RectangleSelector(self.frame_single_left,
+                                               lambda a,b: self.on_select(a,b,'left'))
+        self.right_selector = RectangleSelector(self.frame_single_right,
+                                                lambda a,b: self.on_select(a,b,'right'))
+        self.selectors = [self.axial_selector,
+                          self.coronal_selector,
+                          self.saggital_selector,
+                          self.left_selector,
+                          self.right_selector]
+        for selector in self.selectors:
+            selector.set_active(False)
+        
         #Set minimums
         self.spinBox_all_x.setMinimum(0)
         self.spinBox_all_y.setMinimum(0)
@@ -189,16 +204,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ###Start with 3-orientation view, open action
         self.on_actionAll_Orientations()
         self.on_actionOpen()
-        
-        ### Contrast
-        #any variables? don't think so? get it from the box instead
-
-        ### Zoom
-        #connect key press and release in canvases to rectangle draw, then save coordinates (like a crop)
-        #add a spinbox for the coordinates?
-        
-        #Draw image pages?
-        #Initialize histogram?
 
         self.statusBar().showMessage('Ready')
 
@@ -323,7 +328,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     return
                 
                 self.treeWidget_data.invisibleRootItem().child(row).setText(1, str(val.shape))
-                self.view_image(val)
+                self.view_image(val, new_image = True)
 
                 self.statusBar().showMessage('File loaded successfully')
 
@@ -354,19 +359,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             scio.savemat(fname, mdict)
         elif self.actionView.isChecked():
             if row == 0:
-                self.view_image(self.magnitude)
+                self.view_image(self.magnitude, new_image = True)
             elif row == 1:
-                self.view_image(self.phase)
+                self.view_image(self.phase, new_image = True)
             elif row == 2:
                 self.toolBox_main.setCurrentIndex(1)
             elif row == 3:
-                self.view_image(self.brain_mask)
+                self.view_image(self.brain_mask, new_image = True)
             elif row == 4:
-                self.view_image(self.unwrapped)
+                self.view_image(self.unwrapped, new_image = True)
             elif row == 5:
-                self.view_image(self.tissue_phase)
+                self.view_image(self.tissue_phase, new_image = True)
             elif row == 6:
-                self.view_image(self.susceptibility)
+                self.view_image(self.susceptibility, new_image = True)
             else:
                 self.statusBar().showMessage('Row '+row+' out of bounds')
                 return
@@ -378,7 +383,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """Handles when treeWidget_parameters is changed.
         Parses the text in the treeWidget and updates the parameters dict.
         """
-        if not self.updating_widget: #ensures that this function is not called during update_treeWidget_parameters 
+        try:
             self.parameters['TE'] = parse_int(self.treeWidget_parameters.topLevelItem(0).child(0).text(1))
             self.parameters['voxelsize'] = parse_array(self.treeWidget_parameters.topLevelItem(0).child(1).text(1), np.float)
             self.parameters['B0'] = parse_int(self.treeWidget_parameters.topLevelItem(0).child(2).text(1))
@@ -393,12 +398,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.parameters['qsm_ics_max_iterations'] = parse_float(self.treeWidget_parameters.topLevelItem(3).child(2).text(1))
             self.parameters['qsm_ics_tolerance'] = parse_float(self.treeWidget_parameters.topLevelItem(3).child(3).text(1))
             self.statusBar().showMessage('Parameters changed successfully')
+        except:
+            self.update_treeWidget_parameters()
+            self.statusBar().showMessage('Error: Text parsing failed')
 
     def update_treeWidget_parameters(self):
         """When the parameters dict is changed directly (like through loading params.mat),
         this function updates the text in treeWidget_parameters.
         """
-        self.updating_widget = True #ensures that on_parameters_changed is not called when the text is changed
+        self.treeWidget_parameters.blockSignals(True)
+        
         self.treeWidget_parameters.topLevelItem(0).child(0).setText(1, str(self.parameters['TE']))
         self.treeWidget_parameters.topLevelItem(0).child(1).setText(1, str(self.parameters['voxelsize']))
         self.treeWidget_parameters.topLevelItem(0).child(2).setText(1, str(self.parameters['B0']))
@@ -414,11 +423,38 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.treeWidget_parameters.topLevelItem(3).child(3).setText(1, str(self.parameters['qsm_ics_tolerance']))
 
         self.statusBar().showMessage('Parameters loaded successfully')
-        self.updating_widget = False
-
+        self.treeWidget_parameters.blockSignals(False)
+        
     ### Orientation/Drawing actions
-    def view_image(self, image = None):
-        """Re-draws the canvas based on current setttings:
+    def zoomed(self, image, key, orientation, xyz, v):
+        """Helper for view_image:
+        Takes in an image, a key representing which frame the image is in,
+        the orientation (axial, saggital, or coronal), an xyz coordinate, and a v coordinate
+        Returns the image zoomed in and sliced properly and in the proper orientation.
+        """
+        if orientation == 'axial':
+            return image[self.zoom_coords[key][0][0]:
+                         self.zoom_coords[key][1][0],
+                         self.zoom_coords[key][0][1]:
+                         self.zoom_coords[key][1][1],
+                         xyz,v]
+        elif orientation == 'saggital':
+            return np.flipud(image[xyz,
+                                   self.zoom_coords[key][0][1]:
+                                   self.zoom_coords[key][1][1],
+                                   self.zoom_coords[key][0][0]:
+                                   self.zoom_coords[key][1][0],
+                                   v].T)
+        else:
+            return np.flipud(image[self.zoom_coords[key][0][1]:
+                                   self.zoom_coords[key][1][1],
+                                   xyz,
+                                   self.zoom_coords[key][0][0]:
+                                   self.zoom_coords[key][1][0],
+                                   v].T)
+        
+    def view_image(self, image = None, new_image = False):
+        """Re-draws the canvas based on current settings:
         - Which view (Coronal, Axial, Saggital, All 3)
         - Which slice to show (found in spin boxes)
         Sets the maximums for the spin boxes and sliders based on image size.
@@ -435,10 +471,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.spinBox_all_v.setMaximum(image.shape[3] - 1)
             
             x, y, z, v = self.spinBox_all_x.value(), self.spinBox_all_y.value(), self.spinBox_all_z.value(), self.spinBox_all_v.value()
-            
-            self.frame_all_axial_image.set_data(image[:,:,z,v])
-            self.frame_all_saggital_image.set_data(image[x,:,:,v])
-            self.frame_all_coronal_image.set_data(image[:,y,:,v])
+
+            if new_image:
+                self.frame_all_axial_image.remove()
+                self.frame_all_saggital_image.remove()
+                self.frame_all_coronal_image.remove()
+                
+                self.frame_all_axial_image = self.frame_all_axial.imshow(self.zoomed(image,'axial','axial',z,v),
+                                                                         interpolation = 'nearest',
+                                                                         cmap = 'gray',
+                                                                         origin = 'lower')
+                self.frame_all_saggital_image = self.frame_all_saggital.imshow(self.zoomed(image,'saggital','saggital',x,v),
+                                                                               interpolation = 'nearest',
+                                                                               cmap = 'gray',
+                                                                               origin = 'lower')
+                self.frame_all_coronal_image = self.frame_all_coronal.imshow(self.zoomed(image,'coronal','coronal',y,v),
+                                                                             interpolation = 'nearest',
+                                                                             cmap = 'gray',
+                                                                             origin = 'lower')
+            else:
+                self.frame_all_axial_image.set_data(self.zoomed(image,'axial','axial',z,v))
+                self.frame_all_saggital_image.set_data(self.zoomed(image,'saggital','saggital',x,v))
+                self.frame_all_coronal_image.set_data(self.zoomed(image,'coronal','coronal',y,v))
 
             self.frame_all_axial_image.set_clim(np.min(image), np.max(image))
             self.frame_all_saggital_image.set_clim(np.min(image), np.max(image))
@@ -474,9 +528,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 z_right = self.spinBox_single_slice_right.value()
                 v_right = min(self.spinBox_single_v.value(), self.current_image_right.shape[3] - 1)
 
-                self.frame_single_left_image.set_data(self.current_image_left[:,:,z_left,v_left])
+                if new_image:
+                    self.frame_single_left_image.remove()
+                    self.frame_single_right_image.remove()
+                    
+                    self.frame_single_left_image = self.frame_single_left.imshow(self.zoomed(self.current_image_left,
+                                                                                             'left','axial',z_left,v_left),
+                                                                                 interpolation = 'nearest',
+                                                                                 cmap = 'gray',
+                                                                                 origin = 'lower')                
+                    self.frame_single_right_image = self.frame_single_right.imshow(self.zoomed(self.current_image_right,
+                                                                                               'right','axial',z_right,v_right),
+                                                                                   interpolation = 'nearest',
+                                                                                   cmap = 'gray',
+                                                                                   origin = 'lower')
+                else:
+                    self.frame_single_left_image.set_data(self.zoomed(self.current_image_left,'left','axial',z_left,v_left))                
+                    self.frame_single_right_image.set_data(self.zoomed(self.current_image_right,'right','axial',z_right,v_right))
+                
                 self.frame_single_left_image.set_clim(np.min(self.current_image_left), np.max(self.current_image_left))
-                self.frame_single_right_image.set_data(self.current_image_right[:,:,z_right,v_right])
                 self.frame_single_right_image.set_clim(np.min(self.current_image_right), np.max(self.current_image_right))
             elif self.actionSaggital.isChecked():
                 max_slice_left = self.current_image_left.shape[0] - 1
@@ -496,9 +566,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 x_right = self.spinBox_single_slice_right.value()
                 v_right = min(self.spinBox_single_v.value(), self.current_image_right.shape[3] - 1)
 
-                self.frame_single_left_image.set_data(self.current_image_left[x_left,:,:,v_left])
+                if new_image:
+                    self.frame_single_left_image.remove()
+                    self.frame_single_right_image.remove()
+                    
+                    self.frame_single_left_image = self.frame_single_left.imshow(self.zoomed(self.current_image_left,
+                                                                                             'left','saggital',x_left,v_left),
+                                                                                 interpolation = 'nearest',
+                                                                                 cmap = 'gray',
+                                                                                 origin = 'lower')
+                    self.frame_single_right_image = self.frame_single_right.imshow(self.zoomed(self.current_image_right,
+                                                                                               'right','saggital',x_right,v_right),
+                                                                                   interpolation = 'nearest',
+                                                                                   cmap = 'gray',
+                                                                                   origin = 'lower')
+                else:
+                    self.frame_single_left_image.set_data(self.zoomed(self.current_image_left,'left','saggital',x_left,v_left))
+                    self.frame_single_right_image.set_data(self.zoomed(self.current_image_right,'right','saggital',x_right,v_right))
+
                 self.frame_single_left_image.set_clim(np.min(self.current_image_left), np.max(self.current_image_left))
-                self.frame_single_right_image.set_data(self.current_image_right[x_right,:,:,v_right])
                 self.frame_single_right_image.set_clim(np.min(self.current_image_right), np.max(self.current_image_right))
                                                           
             elif self.actionCoronal.isChecked():
@@ -519,15 +605,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 y_right = self.spinBox_single_slice_right.value()
                 v_right = min(self.spinBox_single_v.value(), self.current_image_right.shape[3] - 1)
 
-                self.frame_single_left_image.set_data(self.current_image_left[:,y_left,:,v_left])
+                if new_image:
+                    self.frame_single_left_image.remove()
+                    self.frame_single_right_image.remove()
+                    
+                    self.frame_single_left_image = self.frame_single_left.imshow(self.zoomed(self.current_image_left,'left','coronal',y_left,v_left),
+                                                                                 interpolation = 'nearest',
+                                                                                 cmap = 'gray',
+                                                                                 origin = 'lower')
+                    self.frame_single_right_image = self.frame_single_right.imshow(self.zoomed(self.current_image_right,'right','coronal',y_right,v_right),
+                                                                                  interpolation = 'nearest',
+                                                                                  cmap = 'gray',
+                                                                                  origin = 'lower')
+                else:
+                    self.frame_single_left_image.set_data(self.zoomed(self.current_image_left,'left','coronal',y_left,v_left))
+                    self.frame_single_right_image.set_data(self.zoomed(self.current_image_right,'right','coronal',y_right,v_right))
+
                 self.frame_single_left_image.set_clim(np.min(self.current_image_left), np.max(self.current_image_left))
-                self.frame_single_right_image.set_data(self.current_image_right[:,y_right,:,v_right])
                 self.frame_single_right_image.set_clim(np.min(self.current_image_right), np.max(self.current_image_right))
             else:
                 self.statusBar().showMessage('No orientation checked')
                 return
             self.frame_single_canvas.draw()
-            #self.statusBar().showMessage('Viewing image')
         
     def on_actionAxial(self):
         """Checks the axial view for view_image.
@@ -538,7 +637,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionCoronal.setChecked(False)
         self.actionAll_Orientations.setChecked(False)
 
-        self.view_image()
+        self.on_actionZoom_Out()
+
+        self.view_image(new_image = True)
         self.statusBar().showMessage('Axial orientation checked')
 
     def on_actionSaggital(self):
@@ -550,7 +651,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionCoronal.setChecked(False)
         self.actionAll_Orientations.setChecked(False)
 
-        self.view_image()
+        self.on_actionZoom_Out()
+
+        self.view_image(new_image = True)
         self.statusBar().showMessage('Saggital orientation checked')
 
     def on_actionCoronal(self):
@@ -562,10 +665,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionCoronal.setChecked(True)
         self.actionAll_Orientations.setChecked(False)
 
-        self.view_image()
+        self.on_actionZoom_Out()
+
+        self.view_image(new_image = True)
         self.statusBar().showMessage('Coronal orientation checked')
 
-    #must return a falsy value because it's combined with view_image using or in a lambda
     def on_slice_changed_left(self, value):
         """Called when the left slice value is changed.
         The slice value can be changed by either the left spin box, the left scroll bar, or the unified scroll bar.
@@ -573,11 +677,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         __init__ relies on the fact that this function returns None because it combines this function
         with view_image in a lambda statement using or: (self.on_slice_changed_left(value) or self.view_image())
         """
+        self.spinBox_single_slice_left.blockSignals(True)
+        self.horizontalScrollBar_single_slice_left.blockSignals(True)
+        
         self.spinBox_single_slice_left.setValue(value)
         self.horizontalScrollBar_single_slice_left.setValue(value)
-        #self.statusBar().showMessage('Left slice: ' + str(value))
 
-    #must return a falsy value because it's combined with view_image using or in a lambda
+        self.spinBox_single_slice_left.blockSignals(False)
+        self.horizontalScrollBar_single_slice_left.blockSignals(False)
+
     def on_slice_changed_right(self, value):
         """Called when the right slice value is changed.
         The slice value can be changed by either the right spin box, the right scroll bar, or the unified scroll bar.
@@ -585,9 +693,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         __init__ relies on the fact that this function returns None because it combines this function
         with view_image in a lambda statement using or: (self.on_slice_changed_right(value) or self.view_image())
         """
+        self.spinBox_single_slice_right.blockSignals(True)
+        self.horizontalScrollBar_single_slice_right.blockSignals(True)
+        
         self.spinBox_single_slice_right.setValue(value)
         self.horizontalScrollBar_single_slice_right.setValue(value)
-        #self.statusBar().showMessage('Right slice: ' + str(value))
+
+        self.spinBox_single_slice_right.blockSignals(False)
+        self.horizontalScrollBar_single_slice_right.blockSignals(False)
 
     def on_spinBox_single_v_changed(self):
         """Called when the v value is changed.
@@ -595,7 +708,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         value = self.spinBox_single_v.value()
         self.view_image()
-        #self.statusBar().showMessage('v: ' + str(value))
 
     def on_actionAll_Orientations(self):
         """Checks the 3-orientation view for view_image.
@@ -606,7 +718,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionCoronal.setChecked(False)
         self.actionAll_Orientations.setChecked(True)
 
-        self.view_image()
+        self.view_image(new_image = True)
         self.statusBar().showMessage('3-orientation view checked')
 
     def on_spinBox_all_x_changed(self):
@@ -614,62 +726,63 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         value = self.spinBox_all_x.value()
         self.view_image()
-        #self.statusBar().showMessage('x: ' + str(value))
-
+        
     def on_spinBox_all_y_changed(self):
         """Changes the y value for the 3-orientation view for the coronal image.
         """
         value = self.spinBox_all_y.value()
         self.view_image()
-        #self.statusBar().showMessage('y: ' + str(value))
-
+        
     def on_spinBox_all_z_changed(self):
         """Changes the z value for the 3-orientation view for the axial image.
         """
         value = self.spinBox_all_z.value()
         self.view_image()
-        #self.statusBar().showMessage('z: ' + str(value))
 
     def on_spinBox_all_v_changed(self):
         """Changes the v value for the 3-orientation view for all three views.
         """
         value = self.spinBox_all_v.value()
         self.view_image()
-        #self.statusBar().showMessage('v: ' + str(value))
-
-    ### Contrast actions
-    def on_actionContrast(self):
-        self.statusBar().showMessage('Change contrast')
-
-    def on_contrast_auto(self):
-        #should change center and range and update hist, but not save yet
-        #(call on_center_changed and on_range_changed)
-        self.statusBar().showMessage('Viewing auto contrast values')
-
-    def on_contrast_ok(self):
-        self.statusBar().showMessage('Contrast values updated successfully')
-
-    def on_contrast_cancel(self):
-        self.statusBar().showMessage('Contrast adjust canceled')
-
-    def on_center_changed(self, value):
-        self.statusBar().showMessage('Center: ' + str(value))
-
-    def on_range_changed(self, value):
-        self.statusBar().showMessage('Range: ' + str(value))
 
     ### Zoom actions
     def on_actionZoom_In(self):
         if self.actionZoom_In.isChecked():
+            for selector in self.selectors:
+                selector.set_active(True)
             self.statusBar().showMessage('Zoom in checked')
         else:
+            for selector in self.selectors:
+                selector.set_active(False)
             self.statusBar().showMessage('Zoom in unchecked')
 
     def on_actionZoom_Out(self):
-        #change so that it's not checkable: it just zooms out all the way
-        #(need to edit window)
+        if self.actionAll_Orientations.isChecked():
+            self.zoom_coords['axial'] = ((None, None), (None, None))
+            self.zoom_coords['coronal'] = ((None, None), (None, None))
+            self.zoom_coords['saggital'] = ((None, None), (None, None))
+        else:
+            if self.radioButton_data_left.isChecked():
+                self.zoom_coords['left'] = ((None, None), (None, None))
+            else:
+                self.zoom_coords['right'] = ((None, None), (None, None))
+        self.view_image(new_image = True)
         self.statusBar().showMessage('Zoomed out successfully')
 
+    def on_select(self, eclick, erelease, key):
+        if self.zoom_coords[key][0][0] is None:
+            self.zoom_coords[key] = [[ceil(eclick.ydata), ceil(eclick.xdata)],
+                                     [int(erelease.ydata), int(erelease.xdata)]]
+        else:
+            self.zoom_coords[key][1][0] = self.zoom_coords[key][0][0] + int(erelease.ydata)
+            self.zoom_coords[key][1][1] = self.zoom_coords[key][0][1] + int(erelease.xdata)
+            
+            self.zoom_coords[key][0][0] += ceil(eclick.ydata)
+            self.zoom_coords[key][0][1] += ceil(eclick.xdata)
+
+        #print(self.zoom_coords[key])
+        self.view_image(new_image = True)
+        
     ### Functions
     def on_create_mask(self):
         """Creates a mask, stores it in self.brain_mask, and updates the size in treeWidget_data.
