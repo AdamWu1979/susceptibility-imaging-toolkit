@@ -20,8 +20,7 @@ def parse_array(s, dtype):
         end = s.index(')')
     elif bracket == '{':
         end = s.index('}')
-    if ',' in s:
-        if ' ' in s:
-            return np.array(s[beginning+1:end].split(', ')).astype(dtype)
-        return np.array(s[beginning+1:end].split(',')).astype(dtype)
-    return np.array(s[beginning+1:end].split(' ')).astype(dtype)
+    s2 = s[beginning+1:end].rstrip(' ').lstrip(' ')
+    s2 = s2.replace(',',' ')
+    s2 = s2.replace(';',' ')
+    return np.array(s2.split()).astype(dtype)

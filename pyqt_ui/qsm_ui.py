@@ -395,7 +395,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.parameters['qsm_ics_alpha'] = parse_float(self.treeWidget_parameters.topLevelItem(3).child(0).text(1))
             self.parameters['qsm_ics_beta'] = parse_float(self.treeWidget_parameters.topLevelItem(3).child(1).text(1))
-            self.parameters['qsm_ics_max_iterations'] = parse_float(self.treeWidget_parameters.topLevelItem(3).child(2).text(1))
+            self.parameters['qsm_ics_max_iterations'] = parse_int(self.treeWidget_parameters.topLevelItem(3).child(2).text(1))
             self.parameters['qsm_ics_tolerance'] = parse_float(self.treeWidget_parameters.topLevelItem(3).child(3).text(1))
             self.statusBar().showMessage('Parameters changed successfully')
         except:
@@ -821,7 +821,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def on_qsm_star(self):
         if self.tissue_phase is None:
             self.on_v_sharp()
-        if self.tissue_phase is None:
+        if self.brain_mask is None:
+            self.on_create_mask()
+        if self.tissue_phase is None or self.brain_mask is None:
             return   
         self.statusBar().showMessage('Solving for susceptibility with QSM-STAR...')
         self.susceptibility = qsm_star(self.tissue_phase, self.brain_mask,
@@ -839,20 +841,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return
         if self.tissue_phase is None:
             self.on_v_sharp()
-        if self.tissue_phase is None:
+        if self.brain_mask is None:
+            self.on_create_mask()
+        if self.tissue_phase is None or self.brain_mask is None:
             return
         self.statusBar().showMessage('Solving for susceptibility with QSM-iCS...')
-        self.susceptibility = qsm_ics(self.tissue_phase, self.brain_mask, self.magnitude,
-                                      voxel_size = self.parameters['voxelsize'],
-                                      B0_dir = self.parameters['B0_dir'],
-                                      B0 = self.parameters['B0'],
-                                      TE = self.parameters['TE'],
-                                      alpha = self.parameters['qsm_ics_alpha'],
-                                      beta = self.parameters['qsm_ics_beta'],
-                                      max_iter = self.parameters['qsm_ics_max_iterations'],
-                                      tol_update = self.parameters['qsm_ics_tolerance'])
-        self.treeWidget_data.invisibleRootItem().child(6).setText(1, str(self.susceptibility.shape))
-        self.statusBar().showMessage('Susceptibility calculated successfully')
+        try:
+            self.susceptibility = qsm_ics(self.tissue_phase, self.brain_mask, self.magnitude,
+                                          voxel_size = self.parameters['voxelsize'],
+                                          B0_dir = self.parameters['B0_dir'],
+                                          B0 = self.parameters['B0'],
+                                          TE = self.parameters['TE'],
+                                          alpha = self.parameters['qsm_ics_alpha'],
+                                          beta = self.parameters['qsm_ics_beta'],
+                                          max_iter = self.parameters['qsm_ics_max_iterations'],
+                                          tol_update = self.parameters['qsm_ics_tolerance'])
+            self.treeWidget_data.invisibleRootItem().child(6).setText(1, str(self.susceptibility.shape))
+            self.statusBar().showMessage('Susceptibility calculated successfully')
+        except Exception as e:
+            print(e)
 
 def main(): 
     a = QtWidgets.QApplication(sys.argv)
