@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator as rgi
 from scipy.ndimage.interpolation import rotate
+from scipy.fftpack import dct, idct
 
 def ifftnc(arr):
     arr = np.array(arr)
@@ -11,6 +12,18 @@ def fftnc(arr):
     arr = np.array(arr)
     scaling = np.sqrt(arr.size)
     return np.fft.fftshift(np.fft.fftn(np.fft.fftshift(arr))) / scaling
+
+def dct3(arr):
+    return dct(dct(dct(arr,
+                       axis = 0, norm = 'ortho'),
+                   axis = 1, norm = 'ortho'),
+               axis = 2, norm = 'ortho')
+
+def idct3(arr):
+    return idct(idct(idct(arr,
+                          axis = 2, norm = 'ortho'),
+                     axis = 1, norm = 'ortho'),
+                axis = 0, norm = 'ortho')
 
 ##def interp3(xx, yy, zz, V, xxi, yyi, zzi):
 ##    interp = rgi((xx, yy, zz), V)

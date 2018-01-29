@@ -9,7 +9,7 @@ def soft(x, tau):
         y = y / (y + tau) * x
         return y
 
-def SpaRSA_HW(y, x, A, AT, tau, verbose = False):
+def sparsa(y, x, A, AT, tau, verbose = False, min_iter = 5, alpha = 1):
     """
     SpaRSA function modified and shortened from the same function written in
     Matlab by Mario Figueiredo, Robert Nowak, Stephen Wright
@@ -61,60 +61,53 @@ def SpaRSA_HW(y, x, A, AT, tau, verbose = False):
     ----------------------------------------------------------------------
     """
     tolerance = 0.01 #min amount of changes needed to keep going
-    max_iter = 1000
-    min_iter = 1 #5
+    max_iter = 100
     min_alpha = 1e-30
     max_alpha = 1e30
-    alpha = 1
-    bb_cycle = 1     #bb is done every bb_cycle iterations
     
     psi_function = soft
     phi_function = lambda x: np.sum(np.abs(x)) #phi is l1
     
     Aty = AT(y) #precompute Aty
-    
-    # if tau is large enough, phi is l1, and psi is soft,
-    # the optimal solution is the zero vector
-    if tau >= np.max(np.abs(Aty)):
-        return np.zeros(Aty.shape)
+    nonzero_x = x != 0
     
     resid = A(x) - y
-    f = (0.5 * np.dot(resid.flatten(), resid.flatten())
+    gradient = AT(resid)
+    alpha = 1
+    f = (0.5 * np.vdot(resid.flatten(), resid.flatten())
         + tau * phi_function(x))
-    nonzero_x = x != 0
     
     iterations = 0
     while True:
+        gradient = AT(resid)
         prev_x = x
         prev_resid = resid
         prev_f = f
-        prev_nonzero_x = nonzero_x
         
-        gradient = AT(resid)
         x = psi_function(prev_x - gradient * (1/alpha),
                          tau/alpha)
         dx = x - prev_x
         Adx = A(dx)
         resid = prev_resid + Adx
-        f = (0.5 * np.dot(resid.flatten(), resid.flatten())
+        f = (0.5 * np.vdot(resid.flatten(), resid.flatten())
             + tau * phi_function(x))
         
-        #every bb_cycle iterations, change alpha
-        if iterations % bb_cycle == 0:
-            dd = np.dot(dx.flatten(), dx.flatten())
-            dGd = np.dot(Adx.flatten(), Adx.flatten())
-            alpha = dGd / (np.finfo(np.float).min + dd)
-            alpha = min(max_alpha, max(min_alpha, alpha))
+        dd = np.vdot(dx.flatten(), dx.flatten())
+        dGd = np.vdot(Adx.flatten(), Adx.flatten())
+        alpha = dGd / (np.finfo(np.double).tiny + dd)
+        alpha = min(max_alpha, max(min_alpha, alpha))
         iterations += 1
         
         #stop criterion = 0:
         #compute the stopping criterion based on the change
         #in the number of non-zero components of the estimate
+        prev_nonzero_x = nonzero_x
         nonzero_x = x != 0
         changes = np.sum(nonzero_x != prev_nonzero_x) / np.sum(nonzero_x)
         if verbose:
             print('-----------------------',
                   '\nObjective f:', f,
+                  '\nAlpha:', alpha,
                   '\nPercent change in x:', changes,
                   '\nChange tolerance:', tolerance, 
                   '\nIterations:', iterations)
