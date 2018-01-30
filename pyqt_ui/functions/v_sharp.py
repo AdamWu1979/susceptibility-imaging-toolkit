@@ -1,46 +1,25 @@
 import numpy as np
 from functions.funcs import ifftnc, fftnc, interp3, append_zeros
 
-def bounding_box_3D(mask):
-    dims = len(mask.shape)
-    assert dims == 3, 'Mask should be 3D'
-    assert np.sum(mask) > 0, 'Mask should have nonzero values'
-    
-    bbox = np.zeros((dims,2), dtype=np.int)
-    bbox[:,0] = mask.shape
-    for i in range(mask.shape[0]):
-        for j in range(mask.shape[1]):
-            for k in range(mask.shape[2]):
-                if mask[i,j,k]:
-                    if i < bbox[0,0]:#leftmost non-zero value
-                        bbox[0,0] = i
-                    if j < bbox[1,0]:
-                        bbox[1,0] = j
-                    if k < bbox[2,0]:
-                        bbox[2,0] = k
-                    if i > bbox[0,1]:#rightmost non-zero value
-                        bbox[0,1] = i
-                    if j > bbox[1,1]:
-                        bbox[1,1] = j
-                    if k > bbox[2,1]:
-                        bbox[2,1] = k
-    bbox[:,1] += 1 #exclusive right bound
-    return bbox
-
 def mask_bounding_box(mask, voxel_size):
-    """
-    Steven Cao, 26 October 2017
-    Wei Li, March 3, 2014.
-    """
-    pad_length = 20
-    pad_size = [int(pad_length // size) for size in voxel_size]
-    pad_size = tuple([(size, size) for size in pad_size])
-    #bbox = regionprops(mask, cache=False)[0].bbox
-    bbox = bounding_box_3D(mask)
-    #bbox = [[bbox[0], bbox[3]],
-    #        [bbox[1], bbox[4]],
-    #        [bbox[2], bbox[5]]]
-    return np.array(bbox), pad_size
+    mask_dim1 = np.where(np.squeeze(np.sum(np.sum(mask, 1), 1)) > 0)[0]
+    mask_dim2 = np.where(np.squeeze(np.sum(np.sum(mask, 0), 1)) > 0)[0]
+    mask_dim3 = np.where(np.squeeze(np.sum(np.sum(mask, 0), 0)) > 0)[0]
+    bounding_box = [[np.min(mask_dim1), np.max(mask_dim1)],
+                    [np.min(mask_dim2), np.max(mask_dim2)],
+                    [np.min(mask_dim3), np.max(mask_dim3)]]
+    #must bound an even number of pts
+    def make_even(a, max_1):
+        a[1] += (a[1] - a[0]) % 2
+        if a[1] > max_1:
+            if a[0] == 0:
+                a[1] -= 2
+            else:
+                a[0] -= 1
+                a[1] -= 1
+    for i in range(len(bounding_box)):
+        make_even(bounding_box[i], mask.shape[i])
+    return np.array(bounding_box)
 
 def ball_3d(radius):
     xx, yy, zz = np.meshgrid(np.arange(-radius, radius + 1),
@@ -100,7 +79,7 @@ def v_sharp(unwrapped_phase, brain_mask, voxel_size = None, pad_size = None, smv
         #Preprocessing
         phase_wo_deconv = np.zeros(phase.shape, dtype = np.float)
         final_mask = np.zeros(phase.shape, dtype = np.bool)
-        bounding_box, _ = mask_bounding_box(mask.astype(int), voxel_size) #pad_size decided here?
+        bounding_box = mask_bounding_box(mask, voxel_size)
         if mask.shape[2] % 2 == 0:
             mask = append_zeros(mask, 2, 2)
         else:
@@ -138,6 +117,7 @@ def v_sharp(unwrapped_phase, brain_mask, voxel_size = None, pad_size = None, smv
 
         print('Iterating R from 1 mm to', smv_size, 'mm towards the center...')
         for i in range(1, smv_size + 1):
+            local_phase, valid_point = None, None #force trash collection to use less memory
             local_phase, valid_point = my_removal(phase_uwp_upsampled, mask_upsampled, i)
             index = np.absolute(valid_point-1) < 1e-6
             phi_filtered[index] = local_phase[index]

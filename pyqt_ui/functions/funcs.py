@@ -37,6 +37,7 @@ def interp3(xx, yy, zz, V, points, shape):
     #shape = points[-1]+1
     values = values.reshape((shape[1],shape[0],shape[2]))
     values = rotate(values, -90)
+    values = np.fliplr(values)
     #grid_points = np.meshgrid(xx,yy,zz)
     #grid_points = np.vstack(map(np.ravel, grid_points)).T
     #values = interpn(tuple([xx,yy,zz]), V, points)
