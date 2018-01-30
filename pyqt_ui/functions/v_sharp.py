@@ -61,7 +61,7 @@ def my_removal(phase, mask, radius):
 
     local_phase = phase - ifftnc(f0 * fftnc(phase))
     valid_point = ifftnc(f0 * fftnc(mask))
-    return local_phase, valid_point
+    return np.real(local_phase), np.real(valid_point)
 
 def v_sharp(unwrapped_phase, brain_mask, voxel_size = None, pad_size = None, smv_size = 12):
     """3D background phase removal for 3D GRE data.
@@ -98,7 +98,7 @@ def v_sharp(unwrapped_phase, brain_mask, voxel_size = None, pad_size = None, smv
         phase = unwrapped_phase[:,:,:,echo]
         mask = brain_mask[:,:,:,echo]
         #Preprocessing
-        phase_wo_deconv = np.zeros(phase.shape, dtype = np.complex)
+        phase_wo_deconv = np.zeros(phase.shape, dtype = np.float)
         final_mask = np.zeros(phase.shape, dtype = np.bool)
         bounding_box, _ = mask_bounding_box(mask.astype(int), voxel_size) #pad_size decided here?
         if mask.shape[2] % 2 == 0:
@@ -129,13 +129,12 @@ def v_sharp(unwrapped_phase, brain_mask, voxel_size = None, pad_size = None, smv
         mask_upsampled = interp3(xx, yy, zz, mask, points, field_of_view)
         mask_upsampled = mask_upsampled > 0.5
 
-
         mask_shape_old = np.array(mask_upsampled.shape)
         for i in range(len(mask_shape_old)):
             if mask_shape_old[i] % 2 == 1:
                 phase_uwp_upsampled = append_zeros(phase_uwp_upsampled, i)
                 mask_upsampled = append_zeros(mask_upsampled, i)
-        phi_filtered = np.zeros(mask_upsampled.shape, dtype = np.complex)
+        phi_filtered = np.zeros(mask_upsampled.shape, dtype = np.float)
 
         print('Iterating R from 1 mm to', smv_size, 'mm towards the center...')
         for i in range(1, smv_size + 1):
@@ -160,7 +159,7 @@ def v_sharp(unwrapped_phase, brain_mask, voxel_size = None, pad_size = None, smv
                              np.arange(0, phase.shape[2]) * voxel_size[2])
         points = np.vstack(map(np.ravel, points)).T
 
-        phi_filtered = np.absolute(phi_filtered * final_mask_pre)
+        phi_filtered *= final_mask_pre
         residual_phase = interp3(xx, yy, zz, phase_uwp_upsampled - phi_filtered, points, phase.shape)
         v_sharp_phase = phase - residual_phase
         final_mask_pre = interp3(xx, yy, zz, final_mask_pre, points, phase.shape)
