@@ -4,12 +4,12 @@ Matlab suite: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
 Steven Cao, Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD  
 University of California, Berkeley  
 
-Releases:
-        - 1.0   08/29/2013
-        - 1.1   12/01/2013, minor correction to V_SHARP_v1.m; 12/11/2013, corrected image loading buttons "mat" for magnitude, phase and mask.
-        - 1.4   01/22/2014, Major update. Corrected code for GUIs, allow zooming, and removed errnonous depedencies; User Manual updated.
-        - 2.0   03/17/2014, Major update. Wei Li. Better Brain Extraction, HARPERELLA without change of mask and others; User Manual updated.
-        - 2.01  6/15/2014, Major update. Wei Li. Better methods for HARPERELLA, QSM, Upgraded QSM_GUI. Working version name: STI Vista.
+Releases:  
+        - 1.0   08/29/2013  
+        - 1.1   12/01/2013, minor correction to V_SHARP_v1.m; 12/11/2013, corrected image loading buttons "mat" for magnitude, phase and mask.  
+        - 1.4   01/22/2014, Major update. Corrected code for GUIs, allow zooming, and removed errnonous depedencies; User Manual updated.  
+        - 2.0   03/17/2014, Major update. Wei Li. Better Brain Extraction, HARPERELLA without change of mask and others; User Manual updated.  
+        - 2.01  6/15/2014, Major update. Wei Li. Better methods for HARPERELLA, QSM, Upgraded QSM_GUI. Working version name: STI Vista.  
         - 3.0   1/05/2017, Major update. Hongjiang Wei. Better methods STAR for QSM, Upgraded QSM_GUI. 2D phase processing for QSM based on 2D EPI data. Working version name: STISuite_V3.0.  
               
 The algorithms are free for academic use only. For commerical or industrial use, please email chunlei.liu@berkeley.edu.
