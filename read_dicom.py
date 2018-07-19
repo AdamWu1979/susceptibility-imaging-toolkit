@@ -3,7 +3,7 @@ from os.path import join
 
 from pydicom import dcmread
 import numpy as np
-from np.linalg import norm
+from numpy.linalg import norm
 
 def is_dcm(file_name):
     return (file_name.lower().endswith('.dcm') or
@@ -43,8 +43,8 @@ def read_dicom(folder):
     max_echo = int(info.EchoNumbers)
     for f in files[1:]:
         file = dcmread(f)
-        slice_loc = np.float(info.SliceLocation)
-        echo = int(info.EchoNumbers)
+        slice_loc = np.float(file.SliceLocation)
+        echo = int(file.EchoNumbers)
         if slice_loc < min_slice:
             min_slice = slice_loc
             min_pos = np.array(file.ImagePositionPatient)
@@ -56,16 +56,17 @@ def read_dicom(folder):
     
     voxel_size = np.array([info.PixelSpacing[0], info.PixelSpacing[1],
                            info.SliceThickness])
-    slices = norm(max_pos - min_pos) // voxel_size[2]
+    slices = np.round(norm(max_pos - min_pos) / voxel_size[2]) + 1
     
     # Fill mag, phase, and TE arrays
-    mag = np.zeros((info.Rows, info.Columns, slices))
-    phase = np.zeros((info.Rows, info.Columns, slices))
+    shape = (int(info.Rows), int(info.Columns), int(slices), int(max_echo))
+    mag = np.zeros(shape)
+    phase = np.zeros(shape)
     TE = np.zeros(max_echo)
     for f in files:
         file = dcmread(f)
-        slice_num = (norm(np.array(file.ImagePositionPatient) - min_pos) //
-                     voxel_size[2])
+        slice_num = int(np.round((norm(np.array(file.ImagePositionPatient) - 
+                                       min_pos) / voxel_size[2])))
         echo = int(file.EchoNumbers) - 1
         TE[echo] = float(file.EchoTime)
         if maker.startswith('GE'):
@@ -78,7 +79,7 @@ def read_dicom(folder):
                 mag[:,:,slice_num,echo] = file.pixel_array
             elif 'p' in file.ImageType or 'P' in file.ImageType:
                 phase[:,:,slice_num,echo] = file.pixel_array
-        elif maker.startswith('SIE'):
+        elif maker.startswith('SIE'): # does not work with multiple coils
             if 'm' in file.ImageType or 'M' in file.ImageType:
                 mag[:,:,slice_num,echo] = file.pixel_array
             elif 'p' in file.ImageType or 'P' in file.ImageType:
@@ -88,6 +89,9 @@ def read_dicom(folder):
                      (np.float(file.LargestImagePixelValue) * np.pi))
     if maker.startswith('GE') or maker.startswith('Ph'):
         phase = 2 * np.pi * phase / (np.max(phase) - np.min(phase))
+        if maker.startswith('GE'):
+            phase[:,:,::2,:] = phase[:,:,::2,:] + np.pi
+    data = mag * np.exp(-1j * phase)
     
     # Acq params
     CF = info.ImagingFrequency * 1e6
@@ -97,9 +101,10 @@ def read_dicom(folder):
         delta_TE = TE[1] - TE[0]
     affine_2d = np.array(info.ImageOrientationPatient).reshape(3,2)
     z = (max_pos - min_pos) / ((slices - 1) * voxel_size[2] - 1)
+    z = np.array([z]).T
     affine_3d = np.concatenate((affine_2d, z), axis = 1)
     B0_dir = np.linalg.lstsq(affine_3d, [0, 0, 1])[0]
     B0 = int(info.MagneticFieldStrength)
     params = {'voxel_size': voxel_size, 'CF': CF, 'delta_TE': delta_TE, 
               'TE': TE, 'B0_dir': B0_dir, 'B0': B0}
-    return mag * np.exp(-1j * phase), params
+    return data, params
