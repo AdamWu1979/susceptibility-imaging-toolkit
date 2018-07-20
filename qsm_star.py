@@ -3,10 +3,19 @@ from functions import ifftnc, fftnc, pad, unpad
 
 def qsm_star(phase, mask, voxel_size, TE, pad_size = (8,8,20), 
              B0 = 3, B0_dir = (0,0,1), tau = 1e-6, d2_thresh = .065):
-    d2 = calc_d2_matrix(phase.shape, voxel_size, B0_dir)
-    # sample = np.abs(d2) > d2_thresh
-    d2 = pad(d2, pad_size)
     phase, mask = pad(phase, pad_size), pad(mask, pad_size)
+    d2 = calc_d2_matrix(phase.shape, voxel_size, B0_dir)
+    
+#    sample = np.abs(d2) <= d2_thresh
+#    d2_thresh = np.zeros(d2.shape)
+#    d2_thresh[np.logical_and(sample, d2 >= 0)] = d2_thresh
+#    d2_thresh[np.logical_and(sample, d2 < 0)] = -d2_thresh
+#    phase_k = fftnc(phase)
+#    x_k = fftnc(ifftnc(phase_k / d2_thresh) * mask)
+#    x_k *= np.logical_not(sample).astype(int)
+#    x = ifftnc(x_k) * mask
+#    x = ifftnc(x * np.logical_not(sample)) * mask
+    
     A = lambda x: ifftnc(d2 * fftnc(x * mask))
     AT = A
     susc = sparsa(phase, np.zeros(phase.shape), A, AT, tau)

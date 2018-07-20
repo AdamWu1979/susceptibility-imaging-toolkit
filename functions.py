@@ -60,6 +60,10 @@ def left_pad(arr, axis):
     pad_size = tuple([(int(i == axis), 0) for i, a in enumerate(arr.shape)])
     return np.pad(arr, pad_size, 'constant')
 
+def right_pad(arr, axis):
+    pad_size = tuple([(0, int(i == axis)) for i, a in enumerate(arr.shape)])
+    return np.pad(arr, pad_size, 'constant')
+
 def unpad(arr, pad_size):
     pad_size = tuple(pad_size)
     while len(pad_size) < len(arr.shape):
